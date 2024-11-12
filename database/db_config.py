@@ -1,5 +1,5 @@
-host = "localhost"
-user = "rejoller"
+host = ""
+user = ""
 port = 5432
-database = "floods_tg_bot"
-password = "9205"
+database = ""
+password = ""
