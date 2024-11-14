@@ -11,17 +11,18 @@ from aiogram.filters.state import State, StatesGroup
 from aiogram.types import CallbackQuery, Message
 
 
-from aiogram_dialog import Dialog, DialogManager, StartMode, Window
+from aiogram_dialog import Dialog, DialogManager, StartMode, Window, ShowMode
 from aiogram_dialog.widgets.kbd import Back, Group, Multiselect, Select, Button
-from aiogram_dialog.widgets.text import Const, Format
+from aiogram_dialog.widgets.text import Const, Format, Text
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.media import DynamicMedia
+from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from sqlalchemy import and_, delete, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database.models import Subscriptions, Sub_categories, Users, DFloodKrudor
+from database.models import FCategoriesSubscriptions, FCategories, Users, DFloodKrudor, Municipalities, MunicSubscriptions
 from database.engine import session_maker
 
 from utils.decline_phrase import decline_phrase
@@ -34,6 +35,7 @@ class MySG(StatesGroup):
     window1 = State()
     window2 = State()
     window3 = State()
+    window4 = State()
 
 
 router = Router()
@@ -43,12 +45,47 @@ async def handle_subscribe(message: Message, session_: AsyncSession, dialog_mana
     await dialog_manager.start(MySG.window1, mode=StartMode.RESET_STACK)
 
 
+
+
+async def window1_get_data(session_: AsyncSession, dialog_manager: DialogManager, **kwargs):
+
+    user_id = dialog_manager.event.from_user.id
+
+        
+        
+    chek_query = select(MunicSubscriptions.map_id).where(MunicSubscriptions.user_id == user_id)
+    check_response = await session_.execute(chek_query)
+    users_subscriptions = check_response.all()
+
+    map_ids = [i[0] for i in users_subscriptions]
+    
+    query = select(Municipalities.municipality_id).where(Municipalities.map_id.in_(map_ids))
+    response = await session_.execute(query)
+    municipality_ids = response.all()
+    municipality_ids = [i[0] for i in municipality_ids]
+    
+    
+    
+
+
+    multiselect = dialog_manager.find("munsub")
+    
+    
+    for municipality_id in municipality_ids:
+        await multiselect.set_checked(municipality_id, True)
+        
+    return {"user_subscriptions": users_subscriptions}
+
+
+
+
+
 async def window2_get_data(session_: AsyncSession, dialog_manager: DialogManager, **kwargs):
 
     user_id = dialog_manager.event.from_user.id
 
-    check_query = select(Subscriptions.category_id).where(
-        Subscriptions.user_id == user_id
+    check_query = select(FCategoriesSubscriptions.category_id).where(
+        FCategoriesSubscriptions.user_id == user_id
     )
     check_response = await session_.execute(check_query)
     users_subscriptions = check_response.all()
@@ -59,9 +96,11 @@ async def window2_get_data(session_: AsyncSession, dialog_manager: DialogManager
     
     for category_id in users_subscriptions:
         await multiselect.set_checked(category_id, True)
+        
+    
     
     query = select(
-        Sub_categories.category_name, Sub_categories.category_id)
+        FCategories.category_name, FCategories.category_id)
     
     response = await session_.execute(query)
     result = response.all()
@@ -69,13 +108,25 @@ async def window2_get_data(session_: AsyncSession, dialog_manager: DialogManager
     return {"subcategories": result}
 
 
+
+async def window4_get_data(session_: AsyncSession, dialog_manager: DialogManager, **kwargs):
+        
+    query = select(
+        Municipalities.municipality_name, Municipalities.municipality_id)
+    response = await session_.execute(query)
+    result = response.all()
+    
+    return {"municsubscritions": result}
+
+
+
 async def delete_sub(session_: AsyncSession, user_id, category_id):
     print("delete_sub")
     user_id = int(user_id)
     category_id = int(category_id)
-    query = (delete(Subscriptions).where(
+    query = (delete(FCategoriesSubscriptions).where(
         and_(
-            Subscriptions.user_id == user_id, Subscriptions.category_id == category_id
+            FCategoriesSubscriptions.user_id == user_id, FCategoriesSubscriptions.category_id == category_id
         )
     ))
     try:
@@ -88,7 +139,7 @@ async def delete_sub(session_: AsyncSession, user_id, category_id):
 async def add_sub(session_: Optional[AsyncSession], user_id, category_id):
     user_id = int(user_id)
     category_id = int(category_id)
-    insert_query = (insert(Subscriptions).values(user_id=user_id, category_id=category_id, date_subscribed = dt.now()))
+    insert_query = (insert(FCategoriesSubscriptions).values(user_id=user_id, category_id=category_id, date_subscribed = dt.now()))
 
     try:
         await session_.execute(insert_query)
@@ -96,6 +147,47 @@ async def add_sub(session_: Optional[AsyncSession], user_id, category_id):
         print('inserted')
     except Exception as e:
         logging.error(e)
+        
+        
+        
+        
+async def delete_munsub(session_: AsyncSession, user_id, municipality_id):
+    print("delete_munsub")
+    user_id = int(user_id)
+    check_query = select(Municipalities.map_id).where(Municipalities.municipality_id == municipality_id)
+    response = await session_.execute(check_query)
+    map_id = response.fetchone()[0]
+
+    query = (delete(MunicSubscriptions).where(
+        and_(
+            MunicSubscriptions.user_id == user_id, MunicSubscriptions.map_id == map_id
+        )
+    ))
+    try:
+        await session_.execute(query)
+        await session_.commit()
+    except Exception as e:
+        logging.error(e)        
+        
+        
+        
+async def add_munsub(session_: Optional[AsyncSession], user_id, municipality_id):
+    user_id = int(user_id)
+    check_query = select(Municipalities.map_id).where(Municipalities.municipality_id == municipality_id)
+    response = await session_.execute(check_query)
+    map_id = response.fetchone()[0]
+
+    insert_query = (insert(MunicSubscriptions).values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
+
+    try:
+        await session_.execute(insert_query)
+        await session_.commit()
+        print('inserted munsub')
+    except Exception as e:
+        logging.error(e)
+        
+        
+
 
 
 async def button1_clicked(
@@ -112,13 +204,13 @@ async def button1_clicked(
         await dialog_manager.switch_to(MySG.window3)
         return
     
+    if clicked_button == '4':
+        await dialog_manager.switch_to(MySG.window4)
+        return
     
     if clicked_button == '3':
         flood_districts = dialog_manager.start_data['flood_districts']
-        
-        
         await callback.message.answer(text=flood_districts)
-        
     
     await dialog_manager.next()
     
@@ -149,6 +241,7 @@ async def button2_clicked(
         await multiselect.set_checked(category_id, False)
         async with session_maker() as session_:
             await add_sub(session_, user_id=user_id, category_id=category_id)
+            
 
 
 async def button3_clicked(
@@ -163,6 +256,38 @@ async def button3_clicked(
 
     
     await dialog_manager.next()
+    
+    
+    
+    
+async def button4_clicked(
+    callback: CallbackQuery,
+    session_: AsyncSession,
+    dialog_manager: DialogManager,
+    data: Optional[dict],
+):
+    from database.engine import session_maker
+    from bot import bot
+    municipality_id = callback.data.split(":")[1]
+    
+    municipality_id = int(municipality_id)
+    user_id = callback.from_user.id
+
+    multiselect = dialog_manager.find("munsub")
+    
+
+    if multiselect.is_checked(municipality_id):
+        await multiselect.set_checked(municipality_id, True)
+        async with session_maker() as session_:
+
+            await delete_munsub(session_, user_id=user_id, municipality_id=municipality_id)
+            await bot.delete_message(callback.message.chat.id, callback.message.message_id)
+
+    if not multiselect.is_checked(municipality_id):
+        await multiselect.set_checked(municipality_id, False)
+        async with session_maker() as session_:
+            await add_munsub(session_, user_id=user_id, municipality_id=municipality_id)
+            await bot.delete_message(callback.message.chat.id, callback.message.message_id)
 
 
 
@@ -229,20 +354,33 @@ multi2 = Multiselect(
 
 
 
+multi4 = Multiselect(
+    Format("✅ {item[0]}"),
+    Format("☑️{item[0]}"),
+    id="munsub",
+    item_id_getter=operator.itemgetter(1),
+    items="municsubscritions",
+    on_click=button4_clicked
+)
+
+
+
 dialog = Dialog(
     Window(
         Format("Добро пожаловать"),
         Button(Const("Выбрать категорию"), id="1", on_click=button1_clicked),
-        Button(Const("Помощь"), id="2", on_click=button1_clicked),
-        Button(Const("Получить новости"), id="3", on_click=check_news),
-        state=MySG.window1),
+        Button(Const("Выбрать муниципальные образования"), id="4", on_click=button1_clicked),
+        Button(Const("🆘Помощь"), id="2", on_click=button1_clicked),
+        Button(Const("🗞️Получить новости"), id="3", on_click=check_news),
+        state=MySG.window1,
+        getter=window1_get_data),
     
     
     Window(
         Format("Выберите подкатегории для оформления подписки"),
         Group(multi2, width=1),
         Back(text=Const("Главное меню")),
-        Button(Const("Помощь"), id="2", on_click=button1_clicked),
+        Button(Const("🆘Помощь"), id="2", on_click=button1_clicked),
         state=MySG.window2,
         getter=window2_get_data, 
     ),
@@ -251,6 +389,15 @@ dialog = Dialog(
         Button(Const("К выбору категорий"), id="1", on_click=button1_clicked),
         Button(Const("Главное меню"), id="3", on_click=button3_clicked),
         state=MySG.window3,
-    )
+    ),
+    Window(
+        Format("Муниципальные образования для выбора"),
+        Group(multi4, width=1),
+        Button(Const("⏪Назад"), id="3", on_click=button3_clicked),
+        Button(Const("🆘Помощь"), id="2", on_click=button1_clicked),
+        state=MySG.window4,
+        getter=window4_get_data,
+        markup_factory=ReplyKeyboardFactory(selective=True, resize_keyboard=True, input_field_placeholder = Const(text= 'Выберите муниципальное образование')),
+    ),
     
 )

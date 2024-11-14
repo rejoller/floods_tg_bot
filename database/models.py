@@ -42,19 +42,35 @@ class DFloodKrudor(Base):
     f_note: Mapped[str] = mapped_column(String(255), nullable=True)
     
 
-class Sub_categories(Base):
-    __tablename__ ='tg_bot_sub_categories'
+class FCategories(Base):
+    __tablename__ ='tg_bot_f_categories'
     category_id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     category_name: Mapped[str] = mapped_column(String(255))
     
 
-class Subscriptions(Base):
-    __tablename__ = 'tg_bot_subscriptions'
+class FCategoriesSubscriptions(Base):
+    __tablename__ = 'tg_bot_f_categories_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
-    category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('tg_bot_sub_categories.category_id'))
+    category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('tg_bot_f_categories.category_id'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
+    
+    
+class Municipalities(Base):
+    __tablename__ = 'municipalities'
+    municipality_id: Mapped[int] = mapped_column(INTEGER, autoincrement=True)
+    map_id: Mapped[str] = mapped_column(String(10), primary_key=True)
+    municipality_name: Mapped[str] = mapped_column(String(225))
+    
+    
+    
+class MunicSubscriptions(Base):
+    __tablename__ = 'tg_bot_municip_subscriptions'
+    subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
+    map_id: Mapped[str] = mapped_column(String(10), ForeignKey('municipalities.map_id'), unique=True)
+    date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
 
 
