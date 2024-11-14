@@ -1,7 +1,7 @@
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
-from typing import Callable, Dict, Any, Awaitable
+from typing import Callable, Dict, Any, Awaitable, Optional
 
 from user_manager import UserManager
 
@@ -19,6 +19,6 @@ class UsersMiddleware(BaseMiddleware):
             "last_name": data["event_from_user"].last_name,
             "username": data["event_from_user"].username,
         }
-        user_manager = UserManager(data["session"])
+        user_manager = UserManager(data["session_"])
         await user_manager.add_user_if_not_exists(user_data)
         return await handler(event, data)

@@ -3,5 +3,7 @@ sqlalchemy==2.0.31
 pandas
 asyncpg
 xlsx2csv
-zoneinfo
 aiogram
+aiogram_dialog
+redis
+icecream
