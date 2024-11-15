@@ -1,7 +1,7 @@
 
 import logging
 import operator
-from typing import Optional
+from typing import Optional, Any
 from datetime import datetime as dt
 import pandas as pd
 
@@ -264,14 +264,17 @@ async def button4_clicked(
     callback: CallbackQuery,
     session_: AsyncSession,
     dialog_manager: DialogManager,
-    data: Optional[dict],
+    data: Any,
 ):
     from database.engine import session_maker
     from bot import bot
+    user_id = callback.from_user.id
+    
+    
     municipality_id = callback.data.split(":")[1]
     
     municipality_id = int(municipality_id)
-    user_id = callback.from_user.id
+    
 
     multiselect = dialog_manager.find("munsub")
     
@@ -335,7 +338,55 @@ async def check_news(callback: CallbackQuery, session: AsyncSession, dialog_mana
     await callback.message.answer(text=response)
         
     
+
+async def allsub_clicked(
+    callback: CallbackQuery, dialog_manager: DialogManager, data: Any
+):
+    print(f"All sub clicked: {callback.data}")
+    from database.engine import session_maker
+    user_id = callback.from_user.id
     
+    allmunic_query = select(
+        Municipalities.map_id
+    ).order_by(Municipalities.municipality_name)
+    async with session_maker() as session_:
+        result = await session_.execute(allmunic_query)
+    response = result.all()
+    map_ids = [item[0] for item in response]
+    
+    
+    
+    query = select(MunicSubscriptions.map_id, MunicSubscriptions.user_id).where(MunicSubscriptions.user_id == user_id)
+    
+    async with session_maker() as session_:
+        result = await session_.execute(query)
+    user_subs = result.all()
+    user_subs = [item[0] for item in user_subs]
+    
+    if callback.data == 'all':
+        to_subscribe = list(set(map_ids) - set(user_subs))
+        ic(to_subscribe)
+        
+            
+        for map_id in to_subscribe:
+            async with session_maker() as session_:
+            
+                query = (insert(MunicSubscriptions)
+                        .values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
+        
+                await session_.execute(query)
+                await session_.commit()
+        return
+        
+    if callback.data == 'noall':
+        query = delete(MunicSubscriptions).where(MunicSubscriptions.user_id == user_id)
+        
+        async with session_maker() as session_:
+            await session_.execute(query)
+            await session_.commit()
+            return
+
+
     
     
 
@@ -392,6 +443,7 @@ dialog = Dialog(
     ),
     Window(
         Format("Муниципальные образования для выбора"),
+        Group(Button(Const("подписаться на все"), id="all", on_click=allsub_clicked),Button(Const("отписаться от всего"), id="noall", on_click=allsub_clicked), width=2),
         Group(multi4, width=1),
         Button(Const("⏪Назад"), id="3", on_click=button3_clicked),
         Button(Const("🆘Помощь"), id="2", on_click=button1_clicked),

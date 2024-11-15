@@ -69,7 +69,7 @@ class MunicSubscriptions(Base):
     __tablename__ = 'tg_bot_municip_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
-    map_id: Mapped[str] = mapped_column(String(10), ForeignKey('municipalities.map_id'), unique=True)
+    map_id: Mapped[str] = mapped_column(String(10), ForeignKey('municipalities.map_id'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
 
