@@ -176,18 +176,18 @@ async def add_munsub(session_: Optional[AsyncSession], user_id, municipality_id)
     response = await session_.execute(check_query)
     map_id = response.fetchone()[0]
     
-    query = select(MunicSubscriptions.map_id).where(user_id == user_id)
+    query = select(MunicSubscriptions.map_id).where(user_id == user_id, map_id == map_id)
     result = await session_.execute(query)
     result = result.all()
 
-    if not result:
-        insert_query = (insert(MunicSubscriptions).values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
 
-        try:
-            await session_.execute(insert_query)
-            await session_.commit()
-        except Exception as e:
-            logging.error(e)
+    insert_query = (insert(MunicSubscriptions).values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
+
+    try:
+        await session_.execute(insert_query)
+        await session_.commit()
+    except Exception as e:
+        logging.error(e)
         
         
 
