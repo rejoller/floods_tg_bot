@@ -8,6 +8,7 @@ class Base(DeclarativeBase):
 
 
 class Users(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ = 'tg_bot_users'
     user_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     first_name: Mapped[str] = mapped_column(String(255))
@@ -21,6 +22,7 @@ class Users(Base):
     
     
 class DFloodKrudor(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ = 'd_flood_krudor'
     id_flood: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     date_event: Mapped[DateTime] = mapped_column(TIMESTAMP, nullable=True)
@@ -45,8 +47,8 @@ class DFloodKrudor(Base):
     
 
 class DFloodAggoAndChs(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ = 'd_flood_aggoandchs'
-    # __table_args__ = {'schema': 'flood'}
 
     id_d_flood_aggoandchs: Mapped[int] = mapped_column(INTEGER, primary_key=True, autoincrement=True)
     date_create: Mapped[DateTime] = mapped_column(TIMESTAMP)
@@ -138,12 +140,14 @@ class DFloodAggoAndChs(Base):
     
 
 class FCategories(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ ='tg_bot_f_categories'
     category_id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
     category_name: Mapped[str] = mapped_column(String(255))
     
 
 class FCategoriesSubscriptions(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ = 'tg_bot_f_categories_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
@@ -153,6 +157,7 @@ class FCategoriesSubscriptions(Base):
     
     
 class Municipalities(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ = 'municipalities'
     municipality_id: Mapped[int] = mapped_column(INTEGER, autoincrement=True)
     map_id: Mapped[str] = mapped_column(String(10), primary_key=True)
@@ -161,6 +166,7 @@ class Municipalities(Base):
     
     
 class MunicSubscriptions(Base):
+    __table_args__ = {'schema': 'flood'}
     __tablename__ = 'tg_bot_municip_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
