@@ -22,7 +22,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database.models import FCategoriesSubscriptions, FCategories, DFloodKrudor, Municipalities, MunicSubscriptions, DFloodAggoAndChs
 from database.engine import session_maker
 
-from utils.decline_phrase import decline_phrase, choose_plural
+from utils.text.decline_phrase import decline_phrase, choose_plural
+from utils.text.msg_splitter import split_message
 from icecream import ic
 
 
@@ -176,18 +177,17 @@ async def add_munsub(session_: Optional[AsyncSession], user_id, municipality_id)
     response = await session_.execute(check_query)
     map_id = response.fetchone()[0]
     
-    query = select(MunicSubscriptions.map_id).where(user_id == user_id, map_id == map_id)
+    query = select(MunicSubscriptions.map_id).where(and_(MunicSubscriptions.user_id == user_id, (MunicSubscriptions.map_id ==map_id)))
     result = await session_.execute(query)
     result = result.all()
+    if not result:
+        insert_query = (insert(MunicSubscriptions).values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
 
-
-    insert_query = (insert(MunicSubscriptions).values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
-
-    try:
-        await session_.execute(insert_query)
-        await session_.commit()
-    except Exception as e:
-        logging.error(e)
+        try:
+            await session_.execute(insert_query)
+            await session_.commit()
+        except Exception as e:
+            logging.error(e)
         
         
 
@@ -213,7 +213,9 @@ async def button1_clicked(
     
     if clicked_button == '3':
         flood_districts = dialog_manager.start_data['flood_districts']
-        await callback.message.answer(text=flood_districts)
+        response = await split_message(flood_districts)
+        for msg_part in response:
+            await callback.message.answer(text=msg_part)
     
     await dialog_manager.next()
     
@@ -363,8 +365,9 @@ async def check_news(callback: CallbackQuery, session: AsyncSession, dialog_mana
                 response += "НЕТ УГРОЗЫ\n\n"
             else:
                 response += "\n\n"
-        
-    await callback.message.answer(text=response)
+    msg_parts = await split_message(response)
+    for msg_part in msg_parts:
+        await callback.message.answer(text=msg_part)
         
 
 
@@ -430,8 +433,11 @@ async def check_news_ago(callback: CallbackQuery, session: AsyncSession, dialog_
             response += f"{evacuated_people_form_1} {evacuated_people} {evacuated_people_form}\n"
             response += f"{temp_holded_1} в пунктах временного содержания {temp_holded} {temp_holded_form}\n\n"
             
-            
-        await callback.message.answer(text=response)
+        
+        msg_parts = await split_message(response)
+        for msg_part in msg_parts:
+            await callback.message.answer(text=msg_part)
+        
                 
                 
                 

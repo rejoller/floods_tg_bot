@@ -150,9 +150,10 @@ class FCategoriesSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
     __tablename__ = 'tg_bot_f_categories_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
-    category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('tg_bot_f_categories.category_id'))
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.tg_bot_users.user_id'))
+    category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('flood.tg_bot_f_categories.category_id'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
+    
     
     
     
@@ -169,8 +170,8 @@ class MunicSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
     __tablename__ = 'tg_bot_municip_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('tg_bot_users.user_id'))
-    map_id: Mapped[str] = mapped_column(String(10), ForeignKey('municipalities.map_id'))
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.tg_bot_users.user_id'))
+    map_id: Mapped[str] = mapped_column(String(10), ForeignKey('flood.municipalities.map_id'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
 
