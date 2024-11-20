@@ -1,0 +1,20 @@
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    restart: always
+  bot:
+    build:
+      dockerfile: Dockerfile
+    container_name: flood_tg_bot
+    stop_signal: SIGINT
+    volumes: 
+      - /var/log/flood_tg_bot:/app/bot_log
+    ports:
+      - "5432:5432"
+    restart: always
+    command: ['python', 'bot.py']
+    depends_on:
+      - redis
+  

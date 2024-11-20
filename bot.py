@@ -1,5 +1,5 @@
 import logging
-from config import BOT_TOKEN
+from config import BOT_TOKEN, REDIS_URL
 import asyncio
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 from logging_config import setup_logging
@@ -12,9 +12,10 @@ from aiogram import Bot, Dispatcher
 
 
 
+
 bot = Bot(BOT_TOKEN)
 
-storage = RedisStorage.from_url("redis://localhost:6379/2", key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True))
+storage = RedisStorage.from_url(REDIS_URL, key_builder=DefaultKeyBuilder(with_destiny=True, with_bot_id=True))
 
 async def on_startup():
     from database.engine import create_db, drop_db
