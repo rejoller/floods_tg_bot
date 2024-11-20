@@ -20,7 +20,7 @@ services:
     stop_signal: SIGINT
     network_mode: "host"
     volumes: 
-      - /var/log/flood_tg_bot:/app/bot_log
+      - /Users/rejoller/floods_tg_bot/bot_log:/app/bot_log
     ports:
       - "5432:5432"
     restart: always
