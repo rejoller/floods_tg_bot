@@ -1,14 +1,24 @@
 services:
   redis:
-    image: redis:alpine
-    ports:
-      - "6379:6379"
+    image: redis:7.2-bookworm
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
     restart: always
+
+
+      
   bot:
     build:
       dockerfile: Dockerfile
     container_name: flood_tg_bot
     stop_signal: SIGINT
+    network_mode: "host"
     volumes: 
       - /var/log/flood_tg_bot:/app/bot_log
     ports:
@@ -17,4 +27,4 @@ services:
     command: ['python', 'bot.py']
     depends_on:
       - redis
-  
+
