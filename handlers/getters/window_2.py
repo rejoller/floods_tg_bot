@@ -22,7 +22,7 @@ async def window2_get_data(session_: AsyncSession, dialog_manager: DialogManager
         await multiselect.set_checked(category_id, True)
 
     query = select(
-        FCategories.category_name, FCategories.category_id)
+        FCategories.caption, FCategories.category_id)
     
     response = await session_.execute(query)
     result = response.all()

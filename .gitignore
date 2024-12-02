@@ -165,3 +165,4 @@ database/db_config.py
 *db_config.py
 .conda/
 docker-compose.yml
+next_cloud.ipynb

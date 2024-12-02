@@ -80,14 +80,15 @@ dialog = Dialog(
     ),
     Window(
         Format("Муниципальные образования для выбора"),
-        Group(Button(Const("✅подписаться на все"), id="all", on_click=button4_clicked),Button(Const("❌отписаться от всего"),
-                                                                                              id="noall", on_click=button4_clicked), width=2),
+        Group(Button(Const("✅подписаться на все"), id="all", on_click=button4_clicked),
+              Button(Const("❌отписаться от всего"), id="noall", on_click=button4_clicked), width=2),
         Group(multi4, width=1),
         Button(Const("⏪Назад"), id="3", on_click=button3_clicked),
         Button(Const("🆘Помощь"), id="2", on_click=button1_clicked),
         state=MySG.window4,
         getter=window4_get_data,
-        markup_factory=ReplyKeyboardFactory(selective=True, resize_keyboard=True, input_field_placeholder = Const(text= 'Выберите муниципальное образование')),
+        markup_factory=ReplyKeyboardFactory(selective=True, resize_keyboard=True,
+                                            input_field_placeholder = Const(text= 'Выберите муниципальное образование')),
     ),
     
 )

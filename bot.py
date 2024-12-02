@@ -20,7 +20,7 @@ storage = RedisStorage.from_url(REDIS_URL, key_builder=DefaultKeyBuilder(with_de
 async def on_startup():
     from database.engine import create_db, drop_db
     # await drop_db()
-    await create_db()
+    # await create_db()
         
 
 async def main():

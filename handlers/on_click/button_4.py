@@ -26,31 +26,31 @@ async def button4_clicked(
     
     
     allmunic_query = select(
-        Municipalities.map_id, Municipalities.municipality_id
-    ).order_by(Municipalities.municipality_name)
+        Municipalities.map_id, Municipalities.id_r_omsu
+    ).order_by(Municipalities.caption_full)
     async with session_maker() as session_:
         result = await session_.execute(allmunic_query)
     response = result.all()
-    map_ids = [item[0] for item in response]
+    municipality_ids = [item[1] for item in response]
     
     
-    query = select(MunicSubscriptions.map_id, MunicSubscriptions.user_id).where(MunicSubscriptions.user_id == user_id)
+    query = select(MunicSubscriptions.municipality_id, MunicSubscriptions.user_id).where(MunicSubscriptions.user_id == user_id)
     async with session_maker() as session_:
         result = await session_.execute(query)
     user_subs = result.all()
     user_subs = [item[0] for item in user_subs]
     
-    query = select(Municipalities.municipality_id).where(Municipalities.map_id.in_(user_subs))
+    query = select(Municipalities.id_r_omsu).where(Municipalities.id_r_omsu.in_(user_subs))
     async with session_maker() as session_:
         result = await session_.execute(query)
     response = result.all()
     
     if callback.data == 'all':
-        to_subscribe = list(set(map_ids) - set(user_subs))
-        for map_id in to_subscribe:
+        to_subscribe = list(set(municipality_ids) - set(user_subs))
+        for municipality_id in to_subscribe:
             async with session_maker() as session_:
                 query = (insert(MunicSubscriptions)
-                        .values(user_id=user_id, map_id=map_id, date_subscribed = dt.now())).on_conflict_do_nothing()
+                        .values(user_id=user_id, municipality_id=municipality_id, date_subscribed = dt.now())).on_conflict_do_nothing()
                 await session_.execute(query)
                 await session_.commit()
         return

@@ -7,18 +7,7 @@ class Base(DeclarativeBase):
 
 
 
-class Users(Base):
-    __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'tg_bot_users'
-    user_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    first_name: Mapped[str] = mapped_column(String(255))
-    last_name: Mapped[str] = mapped_column(String(255), nullable=True)
-    username: Mapped[str] = mapped_column(String(255), nullable=True)
-    joined_at: Mapped[DateTime] = mapped_column(TIMESTAMP)
-    is_admin: Mapped[bool] = mapped_column(BOOLEAN)
-    latitude: Mapped[float] = mapped_column(FLOAT, nullable=True)
-    longitude: Mapped[float] = mapped_column(FLOAT, nullable=True)
-    phone_number: Mapped[str] = mapped_column(String(255), nullable=True)
+
     
     
 class DFloodKrudor(Base):
@@ -26,10 +15,10 @@ class DFloodKrudor(Base):
     __tablename__ = 'd_flood_krudor'
     id_flood: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     date_event: Mapped[DateTime] = mapped_column(TIMESTAMP, nullable=True)
-    district: Mapped[str] = mapped_column(String(255), nullable=True)
+    municipality: Mapped[str] = mapped_column(String(255), nullable=True)
     road: Mapped[str] = mapped_column(String(255), nullable=True)
     oper_mode: Mapped[str] = mapped_column(String(255), nullable=True)
-    type: Mapped[str] = mapped_column(String(255), nullable=True)
+    type_flood: Mapped[str] = mapped_column(String(255), nullable=True)
     f_closing_date: Mapped[DateTime] = mapped_column(TIMESTAMP, nullable=True)
     f_opening_date: Mapped[DateTime] = mapped_column(TIMESTAMP, nullable=True)
     f_location: Mapped[str] = mapped_column(String(255), nullable=True)
@@ -137,43 +126,81 @@ class DFloodAggoAndChs(Base):
 
 
 
+
+
     
 
 class FCategories(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ ='tg_bot_f_categories'
+    __tablename__ ='r_tg_bot_f_category'
     category_id: Mapped[int] = mapped_column(INTEGER, primary_key=True)
-    category_name: Mapped[str] = mapped_column(String(255))
-    
-
-class FCategoriesSubscriptions(Base):
-    __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'tg_bot_f_categories_subscriptions'
-    subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.tg_bot_users.user_id'))
-    category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('flood.tg_bot_f_categories.category_id'))
-    date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
-    
-    
+    caption: Mapped[str] = mapped_column(String(255))
     
     
 class Municipalities(Base):
+    __table_args__ = {'schema': 'shared'}
+    __tablename__ = 'r_omsu'
+    num: Mapped[int] = mapped_column(INTEGER, nullable=True)
+    map_id: Mapped[str] = mapped_column(String(50), nullable=True)
+    user_id: Mapped[str] = mapped_column(String(50), nullable=True)
+    caption_full: Mapped[str] = mapped_column(String(50), nullable=True)
+    caption_short: Mapped[str] = mapped_column(String(50), nullable=True)
+    region_group: Mapped[str] = mapped_column(String(50), nullable=True)
+    omsu_type: Mapped[str] = mapped_column(String(50), nullable=True)
+    onf: Mapped[str] = mapped_column(String(50), nullable=True)
+    onf_short: Mapped[str] = mapped_column(String(50), nullable=True)
+    caption_ano_dialog: Mapped[str] = mapped_column(String(50), nullable=True)
+    admin_caption: Mapped[str] = mapped_column(String(255), nullable=True)
+    admin_caption_short: Mapped[str] = mapped_column(String(50), nullable=True)
+    admin_region: Mapped[str] = mapped_column(String(255), nullable=True)
+    head_post: Mapped[str] = mapped_column(String(255), nullable=True)
+    head_fio: Mapped[str] = mapped_column(String(255), nullable=True)
+    omsu: Mapped[str] = mapped_column(String(255), nullable=True)
+    id_r_omsu: Mapped[int] = mapped_column(INTEGER, primary_key=True)
+    date_ins: Mapped[DateTime] = mapped_column(TIMESTAMP)
+    date_upd: Mapped[DateTime] = mapped_column(TIMESTAMP)
+
+
+
+    
+    
+class FCategoriesSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'municipalities'
-    municipality_id: Mapped[int] = mapped_column(INTEGER, autoincrement=True)
-    map_id: Mapped[str] = mapped_column(String(10), primary_key=True)
-    municipality_name: Mapped[str] = mapped_column(String(225))
+    __tablename__ = 'd_tg_bot_f_category_subscriptions'
+    subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_users.user_id'))
+    category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('flood.r_tg_bot_f_category.category_id'))
+    date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)    
+    
+    
     
     
     
 class MunicSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'tg_bot_municip_subscriptions'
+    __tablename__ = 'd_tg_bot_municip_subscriptions'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.tg_bot_users.user_id'))
-    map_id: Mapped[str] = mapped_column(String(10), ForeignKey('flood.municipalities.map_id'))
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_users.user_id'))
+    municipality_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('shared.r_omsu.id_r_omsu'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
+    
+    
+    
+    
+    
+class Users(Base):
+    __table_args__ = {'schema': 'flood'}
+    __tablename__ = 'd_tg_bot_users'
+    user_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
+    first_name: Mapped[str] = mapped_column(String(255))
+    last_name: Mapped[str] = mapped_column(String(255), nullable=True)
+    username: Mapped[str] = mapped_column(String(255), nullable=True)
+    joined_at: Mapped[DateTime] = mapped_column(TIMESTAMP)
+    is_admin: Mapped[bool] = mapped_column(BOOLEAN)
+    latitude: Mapped[float] = mapped_column(FLOAT, nullable=True)
+    longitude: Mapped[float] = mapped_column(FLOAT, nullable=True)
+    phone_number: Mapped[str] = mapped_column(String(255), nullable=True)
 
 
 

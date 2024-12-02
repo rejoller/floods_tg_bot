@@ -9,12 +9,13 @@ import pandas as pd
 from utils import split_message, choose_plural
 
 from database.engine import session_maker
-from database.models import DFloodAggoAndChs
-
+from database.models import DFloodAggoAndChs, Municipalities, MunicSubscriptions
+from icecream import ic
 
 
 async def check_news_ago(callback: CallbackQuery, session: AsyncSession, dialog_manager: DialogManager):
     async with session_maker() as session_:
+        user_id = callback.from_user.id
         query = select(DFloodAggoAndChs.municipality, DFloodAggoAndChs.date_incident, DFloodAggoAndChs.operating_mode,DFloodAggoAndChs.type_flood, DFloodAggoAndChs.settlement,
                        DFloodAggoAndChs.omd_wlwb_cwl, DFloodAggoAndChs.omd_wlwb_cl, DFloodAggoAndChs.sd_qfh_result, DFloodAggoAndChs.sd_qft_result, DFloodAggoAndChs.sd_qft_estate_territory, DFloodAggoAndChs.ap_qvfz_result,
                        DFloodAggoAndChs.ap_qvfz_children, DFloodAggoAndChs.ap_epp_result, DFloodAggoAndChs.ap_efz_result, DFloodAggoAndChs.ap_epp_wta_people, DFloodAggoAndChs.ap_efz_wta_people)
@@ -22,7 +23,20 @@ async def check_news_ago(callback: CallbackQuery, session: AsyncSession, dialog_
         response = await session_.execute(query)
         result = response.all()
         
+        
+        query_users_subs = select(Municipalities.caption_full).join(MunicSubscriptions, Municipalities.map_id == MunicSubscriptions.municipality_id).where(MunicSubscriptions.user_id == user_id)
+        response = await session_.execute(query_users_subs)
+        response = response.all()
+        users_subs = [i[0] for i in response]
+        
         df = pd.DataFrame(result)
+        
+        df = df.query('municipality in @users_subs')
+        ic(df.empty)
+        if df.empty:
+            await callback.answer('Для вас сейчас нет новостей😳', show_alert=True)
+            return
+        
         df['date_incident'] = df['date_incident'].apply(lambda x: x.strftime('%d.%m.%Y') if pd.notnull(x) else x)
         df['danger_icon'] = df.apply(lambda row: '🟢' if row['operating_mode'] == 'Повседневная деятельность' else '🔴', axis=1)
         

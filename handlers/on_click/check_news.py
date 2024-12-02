@@ -1,9 +1,7 @@
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-
 from database.engine import session_maker
 from database.models import DFloodKrudor
 
@@ -15,7 +13,7 @@ from utils import decline_phrase, split_message
 async def check_news(callback: CallbackQuery, session: AsyncSession, dialog_manager: DialogManager):
     async with session_maker() as session_:
     
-        query = select(DFloodKrudor.district, DFloodKrudor.date_event, DFloodKrudor.type, DFloodKrudor.road, DFloodKrudor.f_location, DFloodKrudor.f_road_l,
+        query = select(DFloodKrudor.municipality, DFloodKrudor.date_event, DFloodKrudor.type_flood, DFloodKrudor.road, DFloodKrudor.f_location, DFloodKrudor.f_road_l,
                        DFloodKrudor.f_road_q, DFloodKrudor.f_water_level, DFloodKrudor.f_closing_date, DFloodKrudor.f_opening_date, DFloodKrudor.oper_mode,
                        DFloodKrudor.f_detour)
         response = await session_.execute(query)
@@ -32,12 +30,12 @@ async def check_news(callback: CallbackQuery, session: AsyncSession, dialog_mana
         for i in df.iterrows():
             declined_roads = await decline_phrase(int(i[1]['f_road_q']))
             
-            response += f"{i[1]['danger_icon']} {i[1]['district']} " + \
+            response += f"{i[1]['danger_icon']} {i[1]['municipality']} " + \
                         f"{i[1]['date_event']}.\n"
             if i[1]['danger_icon'] == '🔴':
                 response += "ПЕРЕЛИВ ДОРОГИ. "
 
-            response += f"{i[1]['type']} \n" +\
+            response += f"{i[1]['type_flood']} \n" +\
             f"А/Д: {i[1]['road']}. Местоположение {i[1]['f_location']}\n" + \
             f"Общая протяженность: {i[1]['f_road_l']} м на {declined_roads} \n" + \
             f"Текущий уровень воды над проезжей частью: {i[1]['f_water_level']} см\n" + \
