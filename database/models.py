@@ -166,7 +166,7 @@ class Municipalities(Base):
     
 class FCategoriesSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'd_tg_bot_f_category_subscriptions'
+    __tablename__ = 'd_tg_bot_f_category_subscription'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_users.user_id'))
     category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('flood.r_tg_bot_f_category.category_id'))
@@ -178,9 +178,9 @@ class FCategoriesSubscriptions(Base):
     
 class MunicSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'd_tg_bot_municip_subscriptions'
+    __tablename__ = 'd_tg_bot_municip_subscription'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_users.user_id'))
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_user.user_id'))
     municipality_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('shared.r_omsu.id_r_omsu'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
@@ -191,7 +191,7 @@ class MunicSubscriptions(Base):
     
 class Users(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'd_tg_bot_users'
+    __tablename__ = 'd_tg_bot_user'
     user_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     first_name: Mapped[str] = mapped_column(String(255))
     last_name: Mapped[str] = mapped_column(String(255), nullable=True)
