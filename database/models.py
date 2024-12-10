@@ -31,6 +31,7 @@ class DFloodKrudor(Base):
     f_pipes_d: Mapped[int] = mapped_column(BIGINT, nullable=True)
     f_detour: Mapped[int] = mapped_column(String(255), nullable=True)
     f_note: Mapped[str] = mapped_column(String(255), nullable=True)
+    date_create: Mapped[DateTime] = mapped_column(TIMESTAMP)
     
     
     
@@ -178,7 +179,7 @@ class FCategoriesSubscriptions(Base):
     
 class MunicSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
-    __tablename__ = 'd_tg_bot_municip_subscription'
+    __tablename__ = 'd_tg_bot_f_municip_subscription'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_user.user_id'))
     municipality_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('shared.r_omsu.id_r_omsu'))

@@ -1,21 +1,28 @@
 from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from database.engine import session_maker
 from database.models import DFloodKrudor
 
 import pandas as pd
 from utils import decline_phrase, split_message
+from icecream import ic
 
 
 
 async def check_news(callback: CallbackQuery, session: AsyncSession, dialog_manager: DialogManager):
     async with session_maker() as session_:
-    
+        subquery = select(func.max(DFloodKrudor.date_create))
+        response = await session_.execute(subquery)
+        res = response.scalar_one()
+        if not res:
+            await callback.answer('Для вас сейчас нет новостей😳', show_alert=True)
+            return
+        
         query = select(DFloodKrudor.municipality, DFloodKrudor.date_event, DFloodKrudor.type_flood, DFloodKrudor.road, DFloodKrudor.f_location, DFloodKrudor.f_road_l,
                        DFloodKrudor.f_road_q, DFloodKrudor.f_water_level, DFloodKrudor.f_closing_date, DFloodKrudor.f_opening_date, DFloodKrudor.oper_mode,
-                       DFloodKrudor.f_detour)
+                       DFloodKrudor.f_detour).where(DFloodKrudor.date_create == res)
         response = await session_.execute(query)
         flood_districts = response.all()
         
