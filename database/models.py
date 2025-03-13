@@ -169,7 +169,7 @@ class FCategoriesSubscriptions(Base):
     __table_args__ = {'schema': 'flood'}
     __tablename__ = 'd_tg_bot_f_category_subscription'
     subscription_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_users.user_id'))
+    user_id: Mapped[int] = mapped_column(BIGINT, ForeignKey('flood.d_tg_bot_user.user_id'))
     category_id: Mapped[int] = mapped_column(INTEGER, ForeignKey('flood.r_tg_bot_f_category.category_id'))
     date_subscribed: Mapped[DateTime] = mapped_column(TIMESTAMP)    
     
