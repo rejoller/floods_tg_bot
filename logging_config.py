@@ -3,7 +3,7 @@ import datetime
 import pytz
 import sys
 import os
-from config import LOG_PATH
+from config import LOG_DIR
 
 
 class Formatter(logging.Formatter):
@@ -26,8 +26,9 @@ class Formatter(logging.Formatter):
 
 
 def setup_logging():
-    if not os.path.exists(LOG_PATH):
-        os.makedirs(LOG_PATH)
+    if not os.path.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
+    LOG_PATH = os.path.join(LOG_DIR, "bot.log")
     file_handler = logging.FileHandler(LOG_PATH)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(
