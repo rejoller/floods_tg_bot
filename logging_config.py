@@ -2,6 +2,8 @@ import logging
 import datetime
 import pytz
 import sys
+import os
+from config import LOG_PATH
 
 
 class Formatter(logging.Formatter):
@@ -12,7 +14,6 @@ class Formatter(logging.Formatter):
     def formatTime(self, record, datefmt=None):
         if sys.meta_path is None:
             return ""
-
         dt = self.converter(record.created)
         if datefmt:
             s = dt.strftime(datefmt)
@@ -25,7 +26,9 @@ class Formatter(logging.Formatter):
 
 
 def setup_logging():
-    file_handler = logging.FileHandler("bot_log/bot.log")
+    if not os.path.exists(LOG_PATH):
+        os.makedirs(LOG_PATH)
+    file_handler = logging.FileHandler(LOG_PATH)
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(
         Formatter("%(asctime)s - %(levelname)s - %(message)s", "%Y-%m-%d %H:%M:%S,%f")
