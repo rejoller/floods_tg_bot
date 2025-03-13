@@ -25,7 +25,7 @@ async def on_startup():
 
 async def main():
     setup_logging()
-    await on_startup()
+    #await on_startup()
     dp = Dispatcher(storage = storage)
     dp.update.middleware(DataBaseSession(session_pool=session_maker))
     router = setup_routers()
