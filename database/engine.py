@@ -5,7 +5,7 @@ from icecream import ic
 
 DBURL=f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}'
 
-engine = create_async_engine(DBURL, echo=False, pool_pre_ping=True)
+engine = create_async_engine(DBURL, echo=False, pool_pre_ping=True, max_overflow=25, pool_size=15, pool_timeout=30, pool_recycle=60)
 session_maker = async_sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 
 
